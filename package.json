@@ -1,0 +1,114 @@
+{
+  "name": "quick-console-log",
+  "displayName": "Quick Console Log",
+  "description": "A Cursor extension for quickly adding console.log statements",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:quick-console-log.insertLog",
+    "onCommand:quick-console-log.insertLogSmart",
+    "onCommand:quick-console-log.commentAllLogs",
+    "onCommand:quick-console-log.removeAllLogs"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "quick-console-log.insertLog",
+        "title": "Insert Console Log"
+      },
+      {
+        "command": "quick-console-log.insertLogSmart",
+        "title": "Insert Console Log (Smart Position)"
+      },
+      {
+        "command": "quick-console-log.commentAllLogs",
+        "title": "Toggle Comment All Console Logs"
+      },
+      {
+        "command": "quick-console-log.removeAllLogs",
+        "title": "Remove All Console Logs"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "quick-console-log.insertLog",
+        "key": "ctrl+shift+,",
+        "mac": "cmd+shift+,",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "quick-console-log.insertLogSmart",
+        "key": "ctrl+shift+.",
+        "mac": "cmd+shift+.",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "quick-console-log.commentAllLogs",
+        "key": "ctrl+shift+/",
+        "mac": "cmd+shift+/",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "quick-console-log.removeAllLogs",
+        "key": "ctrl+shift+d",
+        "mac": "cmd+shift+d",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "Quick Console Log",
+      "properties": {
+        "quickConsoleLog.insertPosition": {
+          "type": "string",
+          "enum": [
+            "nextLine",
+            "smart"
+          ],
+          "default": "nextLine",
+          "description": "Where to insert the console.log statement"
+        },
+        "quickConsoleLog.logFormat": {
+          "type": "string",
+          "default": "'${name}```'",
+          "description": "Format of the console.log message"
+        },
+        "quickConsoleLog.indentStyle": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "space",
+            "tab"
+          ],
+          "default": "auto",
+          "description": "Indentation style"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . --outDir out --watch",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^16.18.34",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "eslint": "^8.26.0",
+    "typescript": "^5.2.2",
+    "ts-loader": "^9.4.4",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  }
+}
