@@ -11,7 +11,7 @@
   ],
   "activationEvents": [
     "onCommand:quick-console-log.insertLog",
-    "onCommand:quick-console-log.insertLogSmart",
+    "onCommand:quick-console-log.insertLogTrace",
     "onCommand:quick-console-log.commentAllLogs",
     "onCommand:quick-console-log.removeAllLogs"
   ],
@@ -20,11 +20,11 @@
     "commands": [
       {
         "command": "quick-console-log.insertLog",
-        "title": "Insert Console Log"
+        "title": "Insert Console Log (Clean)"
       },
       {
-        "command": "quick-console-log.insertLogSmart",
-        "title": "Insert Console Log (Smart Position)"
+        "command": "quick-console-log.insertLogTrace",
+        "title": "Insert Console Log (Trace)"
       },
       {
         "command": "quick-console-log.commentAllLogs",
@@ -43,7 +43,7 @@
         "when": "editorTextFocus"
       },
       {
-        "command": "quick-console-log.insertLogSmart",
+        "command": "quick-console-log.insertLogTrace",
         "key": "ctrl+shift+.",
         "mac": "cmd+shift+.",
         "when": "editorTextFocus"
@@ -64,18 +64,13 @@
     "configuration": {
       "title": "Quick Console Log",
       "properties": {
-        "quickConsoleLog.insertPosition": {
+        "quickConsoleLog.format": {
           "type": "string",
           "enum": [
-            "nextLine",
-            "smart"
+            "clean",
+            "trace"
           ],
-          "default": "nextLine",
-          "description": "Where to insert the console.log statement"
-        },
-        "quickConsoleLog.logFormat": {
-          "type": "string",
-          "default": "'${name}```'",
+          "default": "clean",
           "description": "Format of the console.log message"
         },
         "quickConsoleLog.indentStyle": {

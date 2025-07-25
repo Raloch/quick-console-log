@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "path";
 
 interface LogPosition {
   line: number;
@@ -12,14 +13,14 @@ export function activate(context: vscode.ExtensionContext) {
   let insertLog = vscode.commands.registerCommand(
     "quick-console-log.insertLog",
     () => {
-      insertConsoleLog(false);
+      insertConsoleLog("clean");
     }
   );
 
-  let insertLogSmart = vscode.commands.registerCommand(
-    "quick-console-log.insertLogSmart",
+  let insertLogTrace = vscode.commands.registerCommand(
+    "quick-console-log.insertLogTrace",
     () => {
-      insertConsoleLog(true);
+      insertConsoleLog("trace");
     }
   );
 
@@ -39,38 +40,84 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     insertLog,
-    insertLogSmart,
+    insertLogTrace,
     commentAllLogs,
     removeAllLogs
   );
 }
 
 // 插入console.log语句
-async function insertConsoleLog(smart: boolean) {
+async function insertConsoleLog(format: "clean" | "trace" = "clean") {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
 
   const document = editor.document;
   const position = editor.selection.active;
-  const line = document.lineAt(position.line);
+  const currentLine = document.lineAt(position.line);
 
   // 获取表达式
   const expression = await getExpression(document, position);
   if (!expression) return;
 
-  // 确定插入位置
-  const insertPosition = smart
-    ? await findSmartInsertPosition(document, position)
-    : { line: position.line + 1, indent: line.text.match(/^\s*/)?.[0] || "" };
+  // 获取插入位置和缩进
+  const insertPosition = findInsertPositionAndIndent(document, position.line);
 
   // 生成日志语句
-  const logStatement = generateLogStatement(expression, insertPosition.indent);
+  const logStatement = generateLogStatement(
+    expression,
+    insertPosition.indent,
+    format,
+    {
+      fileName: path.basename(document.fileName),
+      lineNumber: position.line + 1,
+    }
+  );
 
   // 插入日志
   editor.edit((editBuilder) => {
     const pos = new vscode.Position(insertPosition.line, 0);
     editBuilder.insert(pos, logStatement);
   });
+}
+
+// 查找插入位置和合适的缩进
+function findInsertPositionAndIndent(
+  document: vscode.TextDocument,
+  currentLineNumber: number
+): LogPosition {
+  const lineCount = document.lineCount;
+  const currentLine = document.lineAt(currentLineNumber);
+  const currentIndent = currentLine.text.match(/^\s*/)?.[0] || "";
+
+  // 查找下一个非空行
+  let nextNonEmptyLine: vscode.TextLine | undefined;
+  for (let i = currentLineNumber + 1; i < lineCount; i++) {
+    const line = document.lineAt(i);
+    if (line.text.trim().length > 0) {
+      nextNonEmptyLine = line;
+      break;
+    }
+  }
+
+  // 如果找到了下一个非空行，比较缩进
+  if (nextNonEmptyLine) {
+    const nextIndent = nextNonEmptyLine.text.match(/^\s*/)?.[0] || "";
+
+    // 比较缩进长度，使用更长的那个（更深的缩进）
+    const indent =
+      nextIndent.length >= currentIndent.length ? nextIndent : currentIndent;
+
+    return {
+      line: currentLineNumber + 1,
+      indent,
+    };
+  }
+
+  // 如果没有下一个非空行，使用当前行的缩进
+  return {
+    line: currentLineNumber + 1,
+    indent: currentIndent,
+  };
 }
 
 // 获取表达式
@@ -162,57 +209,32 @@ async function getExpression(
   return expression;
 }
 
-// 查找智能插入位置
-async function findSmartInsertPosition(
-  document: vscode.TextDocument,
-  position: vscode.Position
-): Promise<LogPosition> {
-  const text = document.getText();
-  const lines = text.split("\n");
-  let currentLine = position.line;
-  let currentIndent = lines[currentLine].match(/^\s*/)?.[0] || "";
-
-  // 查找代码块结束位置
-  let bracketCount = 0;
-  let foundClosing = false;
-
-  for (let i = currentLine; i < lines.length; i++) {
-    const line = lines[i];
-
-    // 计算括号数量
-    for (const char of line) {
-      if (char === "{") bracketCount++;
-      if (char === "}") {
-        bracketCount--;
-        if (bracketCount === 0) {
-          foundClosing = true;
-          currentLine = i;
-          break;
-        }
-      }
-    }
-
-    if (foundClosing) break;
-  }
-
-  // 如果没找到代码块结束，就插入到下一行
-  if (!foundClosing) {
-    currentLine = position.line + 1;
-  }
-
-  return {
-    line: currentLine,
-    indent: currentIndent,
-  };
+interface LogContext {
+  fileName: string;
+  lineNumber: number;
 }
 
 // 生成日志语句
-function generateLogStatement(expression: string, indent: string): string {
-  const config = vscode.workspace.getConfiguration("quickConsoleLog");
-  const format = config.get<string>("logFormat") || "'${name}```'";
+function generateLogStatement(
+  expression: string,
+  indent: string,
+  format: "clean" | "trace",
+  context: LogContext
+): string {
+  let logTemplate: string;
 
-  const logMessage = format.replace("${name}", expression);
-  return `${indent}console.log(${logMessage}, ${expression});\n`;
+  switch (format) {
+    case "clean":
+      logTemplate = `${indent}console.log('👉 %c ${expression}', 'color: #3b82f6', ${expression});\n`;
+      break;
+    case "trace":
+      logTemplate = `${indent}console.log('👉 %c [${context.fileName}:${context.lineNumber}] ${expression}', 'color: #3b82f6', ${expression});\n`;
+      break;
+    default:
+      logTemplate = `${indent}console.log('👉 %c ${expression}', 'color: #3b82f6', ${expression});\n`;
+  }
+
+  return logTemplate;
 }
 
 // 切换所有console.log的注释状态
