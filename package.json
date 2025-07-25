@@ -1,19 +1,38 @@
 {
   "name": "quick-console-log",
   "displayName": "Quick Console Log",
-  "description": "A Cursor extension for quickly adding console.log statements",
+  "description": "Quickly generate console.log statements with variable names in JavaScript/TypeScript",
   "version": "0.0.1",
+  "publisher": "Ryan Lu",
+  "author": {
+    "name": "Ryan Lu"
+  },
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Raloch/quick-console-log"
+  },
+  "license": "MIT",
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": [
+    "Snippets",
+    "Formatters",
     "Other"
   ],
+  "keywords": [
+    "console.log",
+    "javascript",
+    "typescript",
+    "debug",
+    "logging"
+  ],
   "activationEvents": [
-    "onCommand:quick-console-log.insertLog",
-    "onCommand:quick-console-log.insertLogTrace",
-    "onCommand:quick-console-log.commentAllLogs",
-    "onCommand:quick-console-log.removeAllLogs"
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -40,25 +59,25 @@
         "command": "quick-console-log.insertLog",
         "key": "ctrl+shift+,",
         "mac": "cmd+shift+,",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && (editorLangId == 'javascript' || editorLangId == 'typescript' || editorLangId == 'javascriptreact' || editorLangId == 'typescriptreact')"
       },
       {
         "command": "quick-console-log.insertLogTrace",
         "key": "ctrl+shift+.",
         "mac": "cmd+shift+.",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && (editorLangId == 'javascript' || editorLangId == 'typescript' || editorLangId == 'javascriptreact' || editorLangId == 'typescriptreact')"
       },
       {
         "command": "quick-console-log.commentAllLogs",
         "key": "ctrl+shift+/",
         "mac": "cmd+shift+/",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && (editorLangId == 'javascript' || editorLangId == 'typescript' || editorLangId == 'javascriptreact' || editorLangId == 'typescriptreact')"
       },
       {
         "command": "quick-console-log.removeAllLogs",
         "key": "ctrl+shift+d",
         "mac": "cmd+shift+d",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && (editorLangId == 'javascript' || editorLangId == 'typescript' || editorLangId == 'javascriptreact' || editorLangId == 'typescriptreact')"
       }
     ],
     "configuration": {

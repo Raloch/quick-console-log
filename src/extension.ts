@@ -7,9 +7,9 @@ interface LogPosition {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('插件 "quick-console-log" 已激活！');
+  console.log('Extension "quick-console-log" is now active!');
 
-  // 注册命令
+  // Register commands
   let insertLog = vscode.commands.registerCommand(
     "quick-console-log.insertLog",
     () => {
@@ -46,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
-// 插入console.log语句
+// Insert console.log statement
 async function insertConsoleLog(format: "clean" | "trace" = "clean") {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
@@ -55,14 +55,14 @@ async function insertConsoleLog(format: "clean" | "trace" = "clean") {
   const position = editor.selection.active;
   const currentLine = document.lineAt(position.line);
 
-  // 获取表达式
+  // Get expression
   const expression = await getExpression(document, position);
   if (!expression) return;
 
-  // 获取插入位置和缩进
+  // Get insertion position and indentation
   const insertPosition = findInsertPositionAndIndent(document, position.line);
 
-  // 生成日志语句
+  // Generate log statement
   const logStatement = generateLogStatement(
     expression,
     insertPosition.indent,
@@ -73,14 +73,14 @@ async function insertConsoleLog(format: "clean" | "trace" = "clean") {
     }
   );
 
-  // 插入日志
+  // Insert log
   editor.edit((editBuilder) => {
     const pos = new vscode.Position(insertPosition.line, 0);
     editBuilder.insert(pos, logStatement);
   });
 }
 
-// 查找插入位置和合适的缩进
+// Find insertion position and appropriate indentation
 function findInsertPositionAndIndent(
   document: vscode.TextDocument,
   currentLineNumber: number
@@ -89,7 +89,7 @@ function findInsertPositionAndIndent(
   const currentLine = document.lineAt(currentLineNumber);
   const currentIndent = currentLine.text.match(/^\s*/)?.[0] || "";
 
-  // 查找下一个非空行
+  // Find next non-empty line
   let nextNonEmptyLine: vscode.TextLine | undefined;
   for (let i = currentLineNumber + 1; i < lineCount; i++) {
     const line = document.lineAt(i);
@@ -99,33 +99,27 @@ function findInsertPositionAndIndent(
     }
   }
 
-  // 如果找到了下一个非空行，比较缩进
+  let indent = currentIndent;
+
+  // Use indentation from next non-empty line if found and it's deeper
   if (nextNonEmptyLine) {
     const nextIndent = nextNonEmptyLine.text.match(/^\s*/)?.[0] || "";
-
-    // 比较缩进长度，使用更长的那个（更深的缩进）
-    const indent =
+    indent =
       nextIndent.length >= currentIndent.length ? nextIndent : currentIndent;
-
-    return {
-      line: currentLineNumber + 1,
-      indent,
-    };
   }
 
-  // 如果没有下一个非空行，使用当前行的缩进
   return {
     line: currentLineNumber + 1,
-    indent: currentIndent,
+    indent,
   };
 }
 
-// 获取表达式
+// Get expression from cursor position
 async function getExpression(
   document: vscode.TextDocument,
   position: vscode.Position
 ): Promise<string | undefined> {
-  // 获取光标所在位置的单词范围
+  // Get word range at cursor position
   let wordRange = document.getWordRangeAtPosition(position);
   if (!wordRange) return;
 
@@ -133,66 +127,66 @@ async function getExpression(
   let lines = text.split("\n");
   let currentLine = lines[position.line];
 
-  // 获取完整表达式
+  // Get complete expression
   let expression = document.getText(wordRange);
   let startChar = wordRange.start.character;
   let endChar = wordRange.end.character;
 
-  // 向前查找对象属性、数组索引、可选链和非空断言
+  // Search backwards for object properties, array indices, optional chaining, and non-null assertions
   for (let i = startChar - 1; i >= 0; i--) {
     let char = currentLine[i];
     let nextChar = currentLine[i + 1] || "";
     let prevChar = currentLine[i - 1] || "";
 
-    // 检查可选链操作符 ?.
+    // Check for optional chaining operator ?.
     if (char === "?" && nextChar === ".") {
       startChar = i;
       continue;
     }
-    // 检查非空断言操作符 !.
+    // Check for non-null assertion operator !.
     if (char === "!" && nextChar === ".") {
       startChar = i;
       continue;
     }
-    // 检查普通属性访问或数组索引
+    // Check for regular property access or array index
     if (char === "." || char === "[") {
       startChar = i;
       continue;
     }
-    // 检查标识符字符
+    // Check for identifier characters
     if (!/[\w\]$]/.test(char)) break;
     startChar = i;
   }
 
-  // 向后查找对象属性、数组索引、可选链和非空断言
+  // Search forwards for object properties, array indices, optional chaining, and non-null assertions
   for (let i = endChar; i < currentLine.length; i++) {
     let char = currentLine[i];
     let nextChar = currentLine[i + 1] || "";
 
-    // 检查属性访问、数组索引结束
+    // Check for property access and array index end
     if (char === "." || char === "[" || char === "]") {
       endChar = i + 1;
       continue;
     }
-    // 检查可选链操作符 ?.
+    // Check for optional chaining operator ?.
     if (char === "?" && nextChar === ".") {
       endChar = i + 2;
       continue;
     }
-    // 检查非空断言操作符 !.
+    // Check for non-null assertion operator !.
     if (char === "!" && nextChar === ".") {
       endChar = i + 2;
       continue;
     }
-    // 检查标识符字符
+    // Check for identifier characters
     if (!/[\w\]]/.test(char)) break;
     endChar = i + 1;
   }
 
-  // 获取完整表达式
+  // Get complete expression
   expression = currentLine.substring(startChar, endChar);
 
-  // 处理函数调用
+  // Handle function calls
   if (currentLine.substring(endChar).trim().startsWith("(")) {
     let bracketCount = 1;
     for (let i = endChar + 1; i < currentLine.length; i++) {
@@ -214,7 +208,7 @@ interface LogContext {
   lineNumber: number;
 }
 
-// 生成日志语句
+// Generate log statement
 function generateLogStatement(
   expression: string,
   indent: string,
@@ -237,7 +231,7 @@ function generateLogStatement(
   return logTemplate;
 }
 
-// 切换所有console.log的注释状态
+// Toggle comments for all console.log statements
 async function toggleConsoleLogComments() {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
@@ -245,7 +239,7 @@ async function toggleConsoleLogComments() {
   const document = editor.document;
   const text = document.getText();
 
-  // 查找所有console.log
+  // Find all console.log statements
   const regex = /^(\s*)(\/\/\s*)?console\.log\(/gm;
   let match;
   let edits: vscode.TextEdit[] = [];
@@ -267,13 +261,13 @@ async function toggleConsoleLogComments() {
     );
   }
 
-  // 应用编辑
+  // Apply edits
   const workspaceEdit = new vscode.WorkspaceEdit();
   workspaceEdit.set(document.uri, edits);
   await vscode.workspace.applyEdit(workspaceEdit);
 }
 
-// 删除所有console.log
+// Remove all console.log statements
 async function removeConsoleLogs() {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
@@ -281,11 +275,11 @@ async function removeConsoleLogs() {
   const document = editor.document;
   const text = document.getText();
 
-  // 查找所有console.log语句
+  // Find all console.log statements
   const regex = /^.*console\.log\(.*\);?\s*\n/gm;
   const newText = text.replace(regex, "");
 
-  // 替换整个文档内容
+  // Replace entire document content
   const fullRange = new vscode.Range(
     document.positionAt(0),
     document.positionAt(text.length)

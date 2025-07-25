@@ -1,57 +1,93 @@
 # Quick Console Log
 
-一个用于快速添加 console.log 语句的 Cursor 插件。
+A Cursor extension for quickly generating console.log statements in JavaScript/TypeScript code.
 
-## 功能
+## Features
 
-- 选中变量后，可以快速添加带有变量名的 console.log 语句
-- 支持快捷键操作（默认未设置，可自定义）
+- Quickly insert console.log statements with variable names
+- Smart indentation handling, auto-aligns with code
+- Support for object properties, array indices, and function calls
+- Support for optional chaining operator (?.) and non-null assertion operator (!.)
+- Batch comment/uncomment all console.log statements
+- One-click removal of all console.log statements
 
-## 使用方法
+## Supported Languages
 
-1. 在代码中选中一个变量
-2. 按下快捷键或通过命令面板执行"Add Console Log Statement"命令
-3. 插件会自动将选中的变量转换为带有变量名的 console.log 语句
+- JavaScript (.js)
+- TypeScript (.ts)
+- React JSX (.jsx)
+- React TSX (.tsx)
 
-例如，当你选中变量`user`时，插件会生成：
+## Usage
+
+### Basic Usage
+
+1. Place cursor on any variable or expression
+2. Press `Cmd/Ctrl + Shift + ,` to insert console.log (clean format)
+3. Press `Cmd/Ctrl + Shift + .` to insert console.log (trace format)
+4. The plugin will insert the log statement on the next line
+
+### Keyboard Shortcuts
+
+- `Cmd/Ctrl + Shift + ,`: Insert console.log (clean)
+- `Cmd/Ctrl + Shift + .`: Insert console.log (trace)
+- `Cmd/Ctrl + Shift + /`: Toggle comment all console.log statements
+- `Cmd/Ctrl + Shift + D`: Remove all console.log statements
+
+### Examples
 
 ```javascript
-console.log("user:", user);
+// Basic variable
+const name = "John"; // cursor on name
+console.log("👉 %c name", "color: #3b82f6", name);
+
+// Object property
+user.profile.age; // cursor on age
+console.log("👉 %c user.profile.age", "color: #3b82f6", user.profile.age);
+
+// Optional chaining
+user?.profile?.name; // cursor on name
+console.log("👉 %c user?.profile?.name", "color: #3b82f6", user?.profile?.name);
+
+// Array index
+users[0].name; // cursor on name
+console.log("👉 %c users[0].name", "color: #3b82f6", users[0].name);
+
+// Function call
+getData(); // cursor on getData
+console.log("👉 %c getData()", "color: #3b82f6", getData());
 ```
 
-## 开发
+## Configuration
 
-1. 克隆项目
+Available settings in the extension settings:
 
-```bash
-git clone https://github.com/yourusername/quick-console-log.git
-cd quick-console-log
-```
+- `quickConsoleLog.format`: Log format (clean/trace)
+  - clean: Simple format, shows only variable name and value
+  - trace: Trace format, shows filename and line number
+- `quickConsoleLog.indentStyle`: Indentation style (auto/space/tab)
+  - auto: Automatically detect file's indentation style
+  - space: Use space indentation
+  - tab: Use tab indentation
 
-2. 安装依赖
+## Notes
 
-```bash
-npm install
-```
+1. The plugin automatically detects code indentation level
+2. Complex expressions maintain their original format
+3. Smart handling of TypeScript type annotations
+4. Currently supports JavaScript/TypeScript related file types only
 
-3. 编译项目
+## Future Plans
 
-```bash
-npm run compile
-```
+1. Support for more programming languages
+2. Additional log format options
+3. Custom log templates
+4. More intelligent features
 
-4. 打包插件
+## Feedback
 
-```bash
-npm run package
-```
+If you find any issues or have feature suggestions, please submit an issue on GitHub.
 
-## 发布
-
-1. 更新版本号（package.json）
-2. 运行打包命令生成.vsix 文件
-3. 提交到 Cursor 插件市场
-
-## 许可证
+## License
 
 MIT
